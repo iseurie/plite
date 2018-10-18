@@ -9,7 +9,6 @@ import gentags as tag
 from itertools import tee
 
 MODEL_DIR = join('..', 'model')
-DATA_DIR = join('..', 'data')
 
 args = {
     'wordNgrams': 1,
