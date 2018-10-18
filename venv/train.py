@@ -6,6 +6,7 @@ import random as rnd
 import fasttext
 import retrieval
 import gentags as tag
+from itertools import tee
 
 MODEL_DIR = join('..', 'model')
 DATA_DIR = join('..', 'data')
@@ -13,10 +14,9 @@ DATA_DIR = join('..', 'data')
 args = {
     'wordNgrams': 1,
     'lr': 0.1,
-    'threads': 3,
+    'threads': 12,
     'lrUpdateRate': 100,
-    'dim': 50,
-    'bucket': 40000,
+    'bucket': 200000,
     'epoch': 10}
 
 def train(oname=None):
@@ -49,5 +49,11 @@ def validate(alpha):
           f'R@1: {test.recall}\n')
 
 if __name__ == '__main__':
+    from sys import argv
+    f1, f2 = tee(argv[1:])
+    next(f2, None)
+    # pass on cfg. parameters specified on the command-line
+    args.update({k[1:]: v for k, v in zip(f1, f2)
+                 if k[0] == '-'})
     validate(0.2)
     train()
