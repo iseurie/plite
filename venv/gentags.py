@@ -37,7 +37,7 @@ DEFAULT_LABEL_PREFIX = '__label__'
 
 def spool(files=retrieval.corporaFiles(), labelPrefix=DEFAULT_LABEL_PREFIX):
     for ipath in files:
-        with open(ipath, 'r') as istrm:
+        with open(ipath, 'r', encoding='utf8') as istrm:
             rd = csv.reader(istrm)
             rows = iter(rd)
             # skip header
@@ -49,7 +49,7 @@ def spool(files=retrieval.corporaFiles(), labelPrefix=DEFAULT_LABEL_PREFIX):
                 yield (cat, content)
 
 def shuffleSpool(files=retrieval.corporaFiles(), labelPrefix=DEFAULT_LABEL_PREFIX, chunksz=1<<12):
-    istreams = tuple(io.BufferedReader(open(f, 'r')) for f in files)
+    istreams = tuple(io.BufferedReader(open(f, 'r', encoding='utf8')) for f in files)
     lengths = tuple(map(os.path.getsize, files))
     breaks = [[0] for _ in range(len(files))]
     breakcs = list(map(len, breaks))
@@ -103,7 +103,7 @@ class Annotations(object):
                 yield (cat, entry)
 
     def writeTo(self, opath, labelPrefix=DEFAULT_LABEL_PREFIX):
-        with open(opath, 'w') as ostrm:
+        with open(opath, 'w', encoding='utf8') as ostrm:
             gen = (f'{labelPrefix}{cat} {content}'
                    for cat, content in self.spool())
             ostrm.writelines(gen)
