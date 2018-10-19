@@ -30,8 +30,7 @@ def sanitize(s, labelPrefix='__label__'):
     s = re.sub(r'\s{2,}', ' ', s)
     s = re.sub(r'(.)\1+', r'\1\1', s)
     s = re.sub(labelPrefix, '', s)
-    s.lower()
-    return s
+    return s.lower()
 
 DEFAULT_LABEL_PREFIX = '__label__'
 
@@ -103,7 +102,7 @@ class Annotations(object):
                 yield (cat, entry)
 
     def writeTo(self, opath, labelPrefix=DEFAULT_LABEL_PREFIX):
-        with open(opath, 'w', encoding='utf8') as ostrm:
+        with open(opath, 'w+', encoding='utf8') as ostrm:
             gen = (f'{labelPrefix}{cat} {content}'
                    for cat, content in self.spool())
             ostrm.writelines(gen)
