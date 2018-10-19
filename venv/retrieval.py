@@ -5,9 +5,9 @@ from os.path import isfile, join
 
 import requests as http
 
-URI_ROOT = 'https://raw.githubusercontent.com/sudhof/politeness/python3/corpora'
+CORPORA_URI_ROOT = 'https://raw.githubusercontent.com/sudhof/politeness/python3/corpora'
 FILES = ('wikipedia.annotated.csv', 'stack-exchange.annotated.csv')
-URIS = tuple(f'{URI_ROOT}/{f}' for f in FILES)
+URIS = (f'{CORPORA_URI_ROOT}/{f}' for f in FILES)
 CORPORA_DIR = join('..', 'corpora')
 
 def pbar(msg, progress, innerwidth):
@@ -25,27 +25,28 @@ def corporaPaths():
 def corporaFiles():
     return filter(isfile, corporaPaths())
 
-def haveAllCorpora():
-    return len(corporaPaths()) == len(corporaFiles())
+def missing():
+    return ((URIS[i], f) for i, f in enumerate(corporaPaths())
+            if not isfile(f))
 
 def retrieve(prn=False):
     rsps = map(http.get, URIS)
     rlen = sum(int(rsp.headers.get('content-length')) for rsp in rsps)
     dl = 0
     padding = (max(map(len, FILES)) - min(map(len, FILES))) * ' '
-    for i, uri in enumerate(URIS):
+    for uri, path in missing():
         rsp = http.get(uri, stream=True)
-        msg = f'Retrieving {FILES[i]}'
-        with open(FILES[i], 'wb') as ostrm:
+        msg = f'Retrieving {path}'
+        with open(path, 'wb') as ostrm:
             for chunk in rsp.iter_content(chunk_size=1<<10):
-                dl += len(chunk)
-                progress = min(dl/rlen, 1)
-                bar = pbar(msg, progress, 30)
-                prn = f'\r{bar}{padding}'
-                stdout.write(prn)
                 ostrm.write(chunk)
+                if prn:
+                    dl += len(chunk)
+                    progress = min(dl/rlen, 1)
+                    bar = pbar(msg, progress, 30)
+                    prn = f'\r{bar}{padding}'
+                    stdout.write(prn)
         print()
-
 if __name__ == '__main__':
     retrieve()
     print('...Done.')

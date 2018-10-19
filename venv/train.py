@@ -3,15 +3,16 @@
 from os.path import join
 import random as rnd
 
+from itertools import tee
 import fasttext
 import retrieval
 import gentags as tag
-from itertools import tee
 
 MODEL_DIR = join('..', 'model')
 
 args = {
     'wordNgrams': 1,
+    'pretrainedVectors': join(retrieval.CORPORA_DIR, 'slim.vec'),
     'lr': 0.1,
     'threads': 12,
     'lrUpdateRate': 100,
@@ -22,13 +23,16 @@ def train(oname=None):
     oname = oname or 'politeness.full'
     corpus = join('data', oname)
     opath = join(MODEL_DIR, oname)
-    if not retrieval.haveAllCorpora():
+    if len(tuple(retrieval.missing())) > 0:
         retrieval.retrieve(True)
+    
     print(f'[{opath}] Serializing annotations...')
     tag.Annotations(tag.spool()).writeTo(corpus)
     return fasttext.supervised(input=corpus, output=opath, **args)
 
 def validate(alpha):
+    if len(tuple(retrieval.missing())) > 0:
+        retrieval.retrieve(True)
     ratings = list(tag.spool())
     rnd.shuffle(ratings)
     i = int(len(ratings)*alpha)
@@ -54,5 +58,6 @@ if __name__ == '__main__':
     # pass on cfg. parameters specified on the command-line
     args.update({k[1:]: v for k, v in zip(f1, f2)
                  if k[0] == '-'})
+
     validate(0.2)
     train()
