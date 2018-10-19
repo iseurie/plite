@@ -30,7 +30,7 @@ def missing():
             if not isfile(f))
 
 def retrieve(prn=False):
-    rsps = map(http.get, URIS)
+    rsps = map(http.head, URIS)
     rlen = sum(int(rsp.headers.get('content-length')) for rsp in rsps)
     dl = 0
     padding = (max(map(len, FILES)) - min(map(len, FILES))) * ' '
